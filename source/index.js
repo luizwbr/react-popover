@@ -62,6 +62,7 @@ class Popover extends React.Component {
     style: T.object,
     tipSize: T.number,
     onOuterAction: T.func,
+    usePortal: T.bool,
   }
   static defaultProps = {
     tipSize: 7,
@@ -74,6 +75,7 @@ class Popover extends React.Component {
     children: null,
     refreshIntervalMs: 200,
     appendTarget: Platform.isClient ? Platform.document.body : null,
+    usePortal: true,
   }
   constructor(props) {
     super(props)
@@ -487,7 +489,7 @@ class Popover extends React.Component {
     Object.assign(this, { containerEl })
   }
   render() {
-    const { className = "", style = {}, tipSize } = this.props
+    const { className = "", style = {}, tipSize, usePortal } = this.props
     const { standing } = this.state
 
     const popoverProps = {
@@ -501,11 +503,21 @@ class Popover extends React.Component {
         <Tip direction={faces[standing]} size={tipSize} />
       </div>
     )
+
+    if (usePortal) {
+      return [
+        this.props.children,
+        Platform.isClient &&
+          ReactDOM.createPortal(popover, this.props.appendTarget),
+          
+      ];
+    }
+
     return [
       this.props.children,
-      Platform.isClient &&
-        ReactDOM.createPortal(popover, this.props.appendTarget),
-    ]
+      Platform.isClient && popover,        
+    ];
+
   }
 }
 
